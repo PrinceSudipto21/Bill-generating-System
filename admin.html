@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Manage Items</title>
+</head>
+<body>
+    <h1>Manage Items</h1>
+    <form id="addItemForm">
+        <h2>Add New Item</h2>
+        <label for="newItemName">Item Name:</label>
+        <input type="text" id="newItemName" name="newItemName" required><br>
+        <label for="newItemCost">Cost:</label>
+        <input type="number" id="newItemCost" name="newItemCost" step="0.01" required><br>
+        <label for="newItemQuantity">Quantity:</label>
+        <input type="number" id="newItemQuantity" name="newItemQuantity" required><br>
+        <button type="submit">Add Item</button>
+    </form>
+
+    <form id="updateItemForm">
+        <h2>Update Existing Item</h2>
+        <label for="updateItemName">Item Name:</label>
+        <input type="text" id="updateItemName" name="updateItemName" required><br>
+        <label for="updateItemQuantity">New Quantity:</label>
+        <input type="number" id="updateItemQuantity" name="updateItemQuantity" required><br>
+        <button type="submit">Update Quantity</button>
+    </form>
+
+    <script>
+        document.getElementById('addItemForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            let formData = new FormData(event.target);
+            fetch('manage_items.php', {
+                method: 'POST',
+                body: formData
+            }).then(response => response.json())
+              .then(data => {
+                  alert(data.message);
+                  if (data.success) {
+                      window.location.reload();
+                  }
+              });
+        });
+
+        document.getElementById('updateItemForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            let formData = new FormData(event.target);
+            fetch('manage_items.php', {
+                method: 'POST',
+                body: formData
+            }).then(response => response.json())
+              .then(data => {
+                  alert(data.message);
+                  if (data.success) {
+                      window.location.reload();
+                  }
+              });
+        });
+    </script>
+</body>
+</html>

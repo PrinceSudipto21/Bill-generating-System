@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grocery Shop Billing</title>
+</head>
+<body>
+    <h1>Grocery Shop Billing</h1>
+    <form id="billingForm">
+        <h2>Customer Details</h2>
+        <label for="phone">Phone Number:</label>
+        <input type="text" id="phone" name="phone" required><br>
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name"><br>
+        <label for="address">Address:</label>
+        <input type="text" id="address" name="address"><br>
+
+        <h2>Item Details</h2>
+        <div id="items">
+            <div class="item">
+                <label for="item1">Item Name:</label>
+                <input type="text" id="item1" name="item[]" required>
+                <label for="quantity1">Quantity:</label>
+                <input type="number" id="quantity1" name="quantity[]" required><br>
+            </div>
+        </div>
+        <button type="button" onclick="addItem()">Add Another Item</button><br><br>
+        <button type="submit">Generate Bill</button>
+    </form>
+
+    <div id="bill" style="display:none;">
+        <h2>Bill</h2>
+        <div id="billDetails"></div>
+    </div>
+
+    <script>
+        document.getElementById('billingForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            let formData = new FormData(event.target);
+            fetch('generate_bill.php', {
+                method: 'POST',
+                body: formData
+            }).then(response => response.json())
+              .then(data => {
+                  if (data.success) {
+                      displayBill(data.bill);
+                  } else {
+                      alert('Error generating bill: ' + data.message);
+                  }
+              });
+        });
+
+        document.getElementById('phone').addEventListener('change', function() {
+            let phone = this.value;
+            fetch(`get_customer_details.php?phone=${phone}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('name').value = data.customer.name;
+                        document.getElementById('address').value = data.customer.address;
+                    } else {
+                        document.getElementById('name').value = '';
+                        document.getElementById('address').value = '';
+                    }
+                });
+        });
+
+        function addItem() {
+            let itemsDiv = document.getElementById('items');
+            let itemCount = itemsDiv.children.length + 1;
+            let newItem = `
+                <div class="item">
+                    <label for="item${itemCount}">Item Name:</label>
+                    <input type="text" id="item${itemCount}" name="item[]" required>
+                    <label for="quantity${itemCount}">Quantity:</label>
+                    <input type="number" id="quantity${itemCount}" name="quantity[]" required><br>
+                </div>
+            `;
+            itemsDiv.insertAdjacentHTML('beforeend', newItem);
+        }
+
+        function displayBill(bill) {
+            let billDiv = document.getElementById('bill');
+            let billDetailsDiv = document.getElementById('billDetails');
+            billDetailsDiv.innerHTML = `
+                <p>Customer Name: ${bill.customer.name}</p>
+                <p>Customer Address: ${bill.customer.address}</p>
+                <p>Phone Number: ${bill.customer.phone}</p>
+                <h3>Items Purchased:</h3>
+                <ul>
+                    ${bill.items.map(item => `<li>${item.name}: ${item.quantity} @ ${item.cost} each = ${item.total_cost}</li>`).join('')}
+                </ul>
+                <p>Total Cost: ${bill.total_cost}</p>
+            `;
+            billDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
